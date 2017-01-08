@@ -10,7 +10,7 @@ import settings
 
 def merge_KEGG_and_BRENDA(BRENDA_DF):
 
-    kegg = settings.kegg    
+    kegg = settings.read_cache('kegg_reactions')    
     # drop kientic parameters with negative values    
     BRENDA_DF = BRENDA_DF[BRENDA_DF>0]    
 
@@ -18,6 +18,8 @@ def merge_KEGG_and_BRENDA(BRENDA_DF):
     BRENDA_DF = BRENDA_DF[(pd.isnull(BRENDA_DF['Commentary'])) |
             (BRENDA_DF['Commentary'].str.find('muta') == -1)]
             
+    kegg = kegg[kegg.stoichiometry<0]
+
     # keep biologically relevant reactions by inner merge BRENDA with KEGG
     DF = BRENDA_DF.merge(kegg, how='inner')
 
@@ -32,8 +34,11 @@ if __name__ == '__main__':
 
     turnover = pd.DataFrame.from_csv("../data/turnover.csv")
     turnover = merge_KEGG_and_BRENDA(turnover)    
-    turnover = turnover.groupby(['EC1', 'EC2', 'EC3', 'EC4', 'EC_number', 'RID', 
+    turnover = turnover.groupby(['EC_number', 'RID', 
                                  'Organism', 'direction'], as_index=False).median()
+
+    turnover.drop(['stoichiometry', 'direction', 'LigandID'], axis=1, inplace=True)
+    turnover.to_csv("../cache/turnover.csv")
 #    km = pd.DataFrame.from_csv("../data/km.csv")
     
 #    km = merge_KEGG_and_BRENDA(km, kegg)

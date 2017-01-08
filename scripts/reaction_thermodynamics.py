@@ -22,7 +22,8 @@ class reaction_thermodynamics(object):
 
     def __init__(self):
 
-        reactions = settings.read_cache('kegg_reactions').KEGG_string
+        reactions = set(settings.read_cache('kegg_reactions').KEGG_string.values)
+        
         reactions = map(literal_eval, reactions)
         self.reactions = []
         self._not_balanced = []
